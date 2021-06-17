@@ -52,6 +52,7 @@ var init = function () {
 		let temporary = $(msgFromPlayer).html()
 		temporary += "\n" + smthToAdd
 		$(msgFromPlayer).html(temporary)
+		$(msgFromPlayer).scrollTop = $(msgFromPlayer).scrollHeight
 	})
 }
 
