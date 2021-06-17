@@ -1,0 +1,35 @@
+body{
+    margin: 0;
+    overflow: hidden;
+}
+#game{
+    position: flex;
+    margin-left: 0%;
+}
+#root{
+    position: absolute;
+}
+#endTurn{
+    width: 200px;
+}
+#navigation{
+    border: solid aliceblue 1px;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 350px;
+    height: 450px;
+    margin-top: 100px;
+    margin-left: 10px;
+}
+#gameInfo{
+    color: aliceblue;
+}
+#msgFromPlayer{
+    border: solid aliceblue 1px;
+    position: flex;
+    width: 250px;
+    overflow-y: scroll;
+    height: 100px;
+} 
