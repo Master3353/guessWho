@@ -50,7 +50,7 @@ var init = function () {
 	socket.on("getMsg", (smthToAdd) => {
 
 		let temporary = $(msgFromPlayer).html()
-		temporary += "</br>" + smthToAdd
+		temporary += "\n" + smthToAdd
 		$(msgFromPlayer).html(temporary)
 	})
 }
