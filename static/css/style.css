@@ -33,6 +33,7 @@ body{
     width: 260px;
     overflow-y: scroll;
     height: 180px;
+    color: white;
 } 
 #guess{
     position: absolute;
