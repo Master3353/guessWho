@@ -57,13 +57,38 @@ db.find({}, function (err, docs) {
 let pickCounter = 0
 let player1 = []
 let player2 = []
+let checkUser = function(name, id){
+    
+    console.log({player1, player2})
+    
+    if(player1[1] == id){
+        if(player2[0][player2[0].length -1] == name){
+            io.sockets.emit("Win",id)
+            console.log("Grottolacje")
+        }else{
+            io.sockets.emit("Lose",id)
+            console.log("Ale noob")
+        }
+    }else if(player2[1] == id){
+        if(player1[0][player1[0].length -1] == name){
+            io.sockets.emit("Win",id)
+            console.log("Grottolacje")
+        }else{
+            io.sockets.emit("Lose",id)
+            console.log("Ale noob")
+        }
+    }
+}
 io.on('connection', (socket) => {
     console.log('a user connected');
+    if (connectCounter == 2) {
+        socket.emit("full")
+        socket.disconnect()
+    }
     connectCounter++;
 
     if (connectCounter == 2) {
         GAME_STARTED = true;
-
     }
     io.sockets.emit("data", dataToSend)
     io.sockets.emit("hello", GAME_STARTED)
@@ -73,20 +98,25 @@ io.on('connection', (socket) => {
         if (pickCounter == 2) {
             player2.push(name)
             player2.push(socket.id)
+            let tmp
+            tmp = player2[0]
+            player2[0] = "siema " + tmp
+            
+            player2[0] = player2[0].split(" ")
             console.log(player2)
             console.log("zaczynamy 1 runde")
             io.sockets.emit("firstRound");
         } else {
             player1.push(name)
             player1.push(socket.id)
+            tmp = player1[0]
+            player1[0] = "siema " + tmp
+            player1[0] = player1[0].split(" ")
             console.log(player1)
             console.log("czekamy az 2 wybierze")
         }
     })
-    let smthSoSend = ""
-    socket.on("wiadomosc", function (qq) {
-        console.log(qq)
-        smthSoSend = qq
+    socket.on("wiadomosc", function (qq,id) {
         io.sockets.emit("getMsg", qq)
     })
     socket.on('disconnect', function () {
@@ -97,9 +127,21 @@ io.on('connection', (socket) => {
         }
 
     });
+    
+    socket.on("Guess", function(name, id){
+        console.log("Co dostał: ")
+        console.log(name)
+        console.log(id)
+        checkUser(name,id)
+        
+    })
+    socket.on("winOnTry",(id)=>{
+		io.sockets.emit("EndGame",(id))
+	})
     console.log(connectCounter)
 
 });
+
 
 app.get("/", function (req, res) {
     res.sendFile(path.join(__dirname + "/static/index.html"))

@@ -3,6 +3,8 @@ var tableOfChampions;
 var you;
 var coverable = false
 var picked = false
+var guess = false
+var guessesLeft = 3;
 var init = function () {
 
 	let siteUrl;
@@ -41,19 +43,53 @@ var init = function () {
 	socket.on("data", (table) => {
 		tableOfChampions = table
 	})
+	socket.on("full",()=>{
+		document.body.innerHTML = "<h1>Rozgrywka już trwa :)</h1>"
+	})
 	socket.on("firstRound", () => {
 		picked = true
 		coverable = true
-		alert("zaczynamy giereczke B)")
+		alert("zaczynamy giereczke")
 		$(endTurn).html("Wyslij wiadomosc do drugiego gracza")
+		$(msgFromPlayer).html("")
+		$(chancesLeft).html("Pozostałych szans: " + guessesLeft)
 	})
 	socket.on("getMsg", (smthToAdd) => {
-
-		let temporary = $(msgFromPlayer).html()
-		temporary += "\n" + smthToAdd
-		$(msgFromPlayer).html(temporary)
-		$(msgFromPlayer).scrollTop = $(msgFromPlayer).scrollHeight
+		var textarea = $(msgFromPlayer);
+		let temporary = textarea.html()
+		temporary += smthToAdd + "\n"
+		textarea.html(temporary)
+		
+		if(textarea.length)
+		textarea.scrollTop(textarea[0].scrollHeight - textarea.height());
 	})
+	socket.on("Win", (id) =>{
+		if(socket.id == id){
+			document.body.innerHTML = "<h1>WYGRAŁEŚ :)</h1>"
+		}else{
+			document.body.innerHTML = "<h1>PRZEGRAŁEŚ :(</h1>"
+		}
+	})
+	socket.on("Lose", (id) =>{
+		if(socket.id == id){
+			
+			guessesLeft--
+			$(chancesLeft).html("Pozostałych szans: " + guessesLeft)
+		}else{
+			console.log("to drugi zgadywał")
+		}
+		if(guessesLeft == 0){
+			socket.emit("winOnTry", id)
+		}
+	})
+	socket.on("EndGame",(id)=>{
+		if(socket.id == id){
+			document.body.innerHTML = "<h1>PRZEGRAŁEŚ :(</h1>"
+		}else{
+			document.body.innerHTML = "<h1>WYGRAŁEŚ :)</h1>"
+		}
+	})
+	
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -62,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 var make3D = function () {
 	console.log("robi sie 3d")
-	document.body.innerHTML = '<div id="root"></div>' + '<div id="navigation"><button id="endTurn">zakoncz ture</button><input type="text" id="textToSend" /><div id="gameInfo"></div><textarea id="msgFromPlayer" name="msg" rows="4" cols="50"></textarea></div > '
+	document.body.innerHTML = '<div id="root"></div>' + '<div id="navigation"><button id="endTurn">Potwierdz wybór swojej postaci</button><input type="text" id="textToSend" /><div id="gameInfo"></div><textarea id="msgFromPlayer" name="msg" rows="4" cols="50"></textarea><button id="guess">Zgadnij postac</button><div id="chancesLeft"></div></div > '
 	var scene = new Scene();
 
 
@@ -137,7 +173,7 @@ var make3D = function () {
 			$(gameInfo).html('Twój champion to: </br>' + '<img src="' + yourChamp + '"></img>')
 			//console.log({ you, yourChamp })
 		}
-		if (coverable == true) {
+		if (coverable == true && guess == false) {
 
 			let tmp = whole.material
 			whole.material = whole.temp
@@ -152,16 +188,42 @@ var make3D = function () {
 			socket.emit('pick', yourChampName)
 
 		}
-		if (picked == true) {
+		if (picked == true && coverable == true) {
 			let dataToSend = $(textToSend).val()
-			console.log("siema")
-			socket.emit("wiadomosc", dataToSend)
+			if(dataToSend != ""){
+				let id = socket.id
+				socket.emit("wiadomosc", dataToSend)
+			}
 			$(textToSend).val("")
 		}
 	}
 	$(endTurn).click(clickButton)
-
-
+	
+	let guessButton = function (){
+		console.log("klikamy")
+		if (guess == false) {
+			console.log("siema na true")
+			coverable = false
+			guess = true
+			$('#guess').html("Wybierz postac do zgadniecia")
+		}else if(guess == true){
+			
+			console.log("siema na false")
+			coverable = true
+			guess = false
+			let nameGuessed = $('#guess').html().split(" ")
+			let id = socket.id
+			console.log("Co wysyłamy: ")
+			console.log(nameGuessed[nameGuessed.length - 1])
+			console.log(id)
+			socket.emit("Guess", nameGuessed[nameGuessed.length - 1], id)
+			$('#guess').html("Zgadnij postac")
+		}
+	}
+	let getName = function (klik){
+		console.log(klik)
+	}
+	$('#guess').click(guessButton)
 	$(document).mousedown(function (event) {
 		mouseVector.x = (event.clientX / $(window).width()) * 2 - 1;
 		mouseVector.y = -(event.clientY / $(window).height()) * 2 + 1;
@@ -171,8 +233,12 @@ var make3D = function () {
 
 			console.log(intersects[0].object)
 			pickChamp(intersects[0].object.picLink, intersects[0].object.name, intersects[0].object)
-
+			if(guess == true && coverable == false){
+				getName(intersects[0].object.name)
+				$('#guess').html("Wybrany champion: "+intersects[0].object.name)
+			}
 		}
+		
 	})
 
 	let cameraLeft = false;
