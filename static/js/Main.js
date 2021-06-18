@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 var make3D = function () {
 	console.log("robi sie 3d")
-	document.body.innerHTML = '<div id="root"></div>' + '<div id="navigation"><button id="endTurn">Potwierdz wybór swojej postaci</button><input type="text" id="textToSend" /><div id="gameInfo"></div><textarea id="msgFromPlayer" name="msg" rows="4" cols="50"></textarea><button id="guess">Zgadnij postac</button><div id="chancesLeft"></div></div > '
+	document.body.innerHTML = '<div id="root"></div>' + '<div id="navigation"><button id="endTurn">Potwierdz wybór swojej postaci</button><input type="text" id="textToSend" /><div id="gameInfo"></div><textarea disabled id="msgFromPlayer" name="msg" rows="4" cols="50"></textarea><button id="guess">Zgadnij postac</button><div id="chancesLeft"></div></div > '
 	var scene = new Scene();
 
 
